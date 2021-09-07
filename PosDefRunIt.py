@@ -1,9 +1,21 @@
 import numpy as np
+import argparse
+from numpy.linalg.linalg import eig
 import pandas as pd
-import sys
 
-def isit_corr(C,eigval):
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--max_iter",        required=True, help="number of projection steps",type=int)
+    parser.add_argument("--input_table",     required=True, help="name of input csv table")
+    parser.add_argument("--output_table",    required=True, help="name of output csv table")
+    parser.add_argument("--work_directory",  required=True, help="directory to write and read from")
+    parser.add_argument("--name_col",        required=True, help="directory to write and read from")
+    args = parser.parse_args()
+    return args
+
+def isit_corr(C):
     psd = True
+    eigval = np.linalg.eigvals(C)
     if  np.linalg.norm(np.diag(C)-1)>1e-6:
         #print('STATUS: DIAGONALS ARE NOT 1!')
         psd = False
@@ -13,46 +25,57 @@ def isit_corr(C,eigval):
     if np.product(C<=1+1e-6) != 1 or np.product(C>=-1-1e-6)!=1:
         #print('STATUS: VALUES NOT BETWEEN NEGATIVE 1 AND 1!')
         psd = False
-    if min(eigval) < 0:
+    if np.product(eigval>-1e-15) == 0:
         #print('STATUS: EIGENVALUES ARE NOT POSITIVE!')
+        print(min(eigval))
         psd = False
+    if psd:
+        print('It\'s a correlation matrix!')
     return psd
 
-def PSD_reb(C,eigen_lt,eigen_replace):
-   print(eigen_replace,eigen_lt)
-   C_sym = .5*(C+C.T)
-   eigval, eigvec = np.linalg.eigh(C_sym)
-   eigval_cutoff = np.diag([eigen_replace if val<eigen_lt else val for val in eigval])
+def matrix_func(lam, evec, f):
+    lam = np.diag([f(x) for x in lam])
+    A = np.matmul(np.matmul(evec,lam),evec.T)
+    return A
 
-   diagonal_scaling = np.diag(1/np.einsum('ij,jj->i',eigvec**2,eigval_cutoff))
-   decomposed_matrix = np.matmul(np.sqrt(diagonal_scaling),np.matmul(eigvec,np.sqrt(eigval_cutoff)))
-   C_prime = np.matmul(decomposed_matrix,decomposed_matrix.T)
+def plus_spectral(A):
+    lam, evec = np.linalg.eigh(A)
+    return matrix_func(lam, evec, lambda x: max(x,0))
 
-   return(C_prime)
 
-def PSD_loop(corr,eigen_lt,eigen_replace,max_iter):
-    corr = .5*(corr+corr.T)
-    for i in range(0,max_iter):
-        print('Iteration: ',i)
-        eigval, eigvec = np.linalg.eigh(corr)
-        if isit_corr(corr,eigval):
-            print(f'Looping converged in {i} iterations.')
-            return corr
-  
-        eigval_cutoff = np.diag([eigen_replace if val<eigen_lt else val for val in eigval])
-        corr = np.matmul(eigvec,np.matmul(eigval_cutoff,eigvec.T))
-        np.fill_diagonal(corr,1)
-        corr = np.clip(corr,-1,1)
+def Ps(A,W):
+    lam, evec = np.linalg.eigh(W)
+    W_inv_square    = matrix_func(lam,evec,lambda x: 1/np.sqrt(x))
+    W_square        = matrix_func(lam,evec,lambda x: np.sqrt(x))
+    conj            = plus_spectral(np.matmul(W_square,np.matmul(A,W_square)))
+    res             = np.matmul(np.matmul(W_inv_square,conj),W_inv_square)
+    return res
 
-    print(f'Looping didn\'t converge in {max_iter} iterations, applying Rebanato\'s method.')
-    corr = PSD_reb(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace)
-    return corr
+def Pu(A):
+    proj = 1*A
+    np.fill_diagonal(proj,1)
+    return proj
 
-def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,max_iter,method):
-    # convert to numpy array
-    df_input_matrix = pd.read_csv(work_path+'\\'+file_name+'.csv')
-    names = df_input_matrix.loc[pd.isna(df_input_matrix[name_col]) == False][name_col]
-    input_matrix = df_input_matrix.loc[pd.isna(df_input_matrix[name_col]) == False, names].copy()
+def near_corr(A,W,max_iter):
+    S = 0*A
+    Y = 1*A
+    for i in range(max_iter):
+        if isit_corr(Y):
+            print(f'Converged in {i} iterations.')
+            break
+        print(f'iteration: {i}')
+        R = Y - S
+        X = Ps(R,W)
+        S = X - R
+        Y = Pu(X)
+    return Y
+
+if __name__=="__main__":
+    args = parse_args()
+    # convert csv to numpy array
+    df_input_matrix = pd.read_csv(args.work_directory+'\\'+args.input_table+'.csv')
+    names = df_input_matrix.loc[pd.isna(df_input_matrix[args.name_col]) == False][args.name_col]
+    input_matrix = df_input_matrix.loc[pd.isna(df_input_matrix[args.name_col]) == False, names].copy()
     input_matrix = input_matrix.fillna(value=0.0).to_numpy()
 
     # convert input_matrix to a correlation matrix if it isn't
@@ -66,43 +89,15 @@ def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,
         print('You\'ve inputed a correlation matrix.')
         corr = input_matrix
         is_input_corr = True
-    
-    if method == 1:
-        corr_out = PSD_loop(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace,max_iter=max_iter)
-    else:
-        corr_out = PSD_reb(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace)
+ 
+    corr_out = near_corr(corr,np.eye(len(corr)),args.max_iter)
 
-    # convert back to input_matrixariance
+    # convert back to input_matrix
     if is_input_corr:
         input_matrix_out = corr_out
     else:
         input_matrix_out = np.array([[corr_out[i, j]*(var_list[i]*var_list[j]) for i in range(n)] for j in range(n)])
     # convert back to input format
-    df_input_matrix.loc[pd.isna(df_input_matrix[name_col]) == False,names] = input_matrix_out
-    df_input_matrix.to_csv(work_path+'\\'+output_table+'.csv',index=False)
-
-    return df_input_matrix
-
-
-input_file_name = sys.argv[1]
-parm_name       = sys.argv[2]
-work_path       = sys.argv[3]
-parms = pd.read_csv(work_path+'\\'+parm_name+'.csv')
-
-# make naming conventions uniform
-parms.columns = map(str.lower, parms.columns)
-parms = parms.rename(columns=dict(
-    outputtable  = 'output_table',
-    namecol      = 'name_col',
-    eigenlt      = 'eigen_lt',
-    eigenreplace = 'eigen_replace',
-    maxiter      = 'max_iter',
-    method       = 'method'
-    ))
-
-parms.max_iter=int(parms.max_iter)
-parms.method=int(parms.method)
-PSD_approx(input_file_name,work_path,**parms.to_dict('r')[0])
-
-# Example Run:
-# python .\PosDefRunIt.py big3000 PosDefParms C:\Users\rvo67\Desktop\PosDefRunIt-to_python-updt
+    df_input_matrix.loc[pd.isna(df_input_matrix[args.name_col]) == False,names] = input_matrix_out
+    df_input_matrix.to_csv(args.work_directory+'\\'+args.output_table+'.csv',index=False)
+# Example Run: python simphigh.py --max_iter 1000 --name_col x --input_table pypos --output_table out --work_directory C:\Users\rvo67\Desktop\test_posdef\new_code
