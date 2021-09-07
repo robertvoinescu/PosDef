@@ -99,7 +99,7 @@ parms = parms.rename(columns=dict(
     eigenreplace = 'eigen_replace',
     maxiter      = 'max_iter',
     method       = 'method',
-    final_reb    = 'final_reb'
+    finalreb    = 'final_reb'
     ))
 
 parms.max_iter=int(parms.max_iter)
@@ -108,4 +108,4 @@ parms.final_reb=int(parms.final_reb)
 PSD_approx(input_file_name,work_path,**parms.to_dict('r')[0])
 
 # Example Run:
-# python .\PosDefRunIt.py big3000 PosDefParms C:\Users\rvo67\Desktop\PosDefRunIt-to_python-updt
+# python .\PosDefRunIt.py NewCorrMatrix PosDefParms .\tabular_data\
