@@ -42,11 +42,19 @@ def plus_spectral(A):
     lam, evec = np.linalg.eigh(A)
     return matrix_func(lam, evec, lambda x: max(x,0))
 
+
+def Ps(A,W):
+    lam, evec = np.linalg.eigh(W)
+    W_inv_square    = matrix_func(lam,evec,lambda x: 1/np.sqrt(x))
+    W_square        = matrix_func(lam,evec,lambda x: np.sqrt(x))
+    conj            = plus_spectral(np.matmul(W_square,np.matmul(A,W_square)))
+    res             = np.matmul(np.matmul(W_inv_square,conj),W_inv_square)
+    return res
+
 def Pu(A):
     proj = 1*A
     np.fill_diagonal(proj,1)
     return proj
-
 
 def near_corr(A,W,max_iter):
     S = 0*A
@@ -57,11 +65,10 @@ def near_corr(A,W,max_iter):
             break
         print(f'iteration: {i}')
         R = Y - S
-        X = plus_spectral(R)
+        X = Ps(R,W)
         S = X - R
         Y = Pu(X)
     return Y
-
 
 if __name__=="__main__":
     args = parse_args()
@@ -93,5 +100,4 @@ if __name__=="__main__":
     # convert back to input format
     df_input_matrix.loc[pd.isna(df_input_matrix[args.name_col]) == False,names] = input_matrix_out
     df_input_matrix.to_csv(args.work_directory+'\\'+args.output_table+'.csv',index=False)
-    
 # Example Run: python simphigh.py --max_iter 1000 --name_col x --input_table pypos --output_table out --work_directory C:\Users\rvo67\Desktop\test_posdef\new_code
