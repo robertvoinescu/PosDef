@@ -16,6 +16,10 @@
 		%let eigenLT=overrideLT;
 	%end;
 
+	%if %symexist(algo)=0 %then %do;
+		%let algo="original";
+	%end;
+
 	%let finalReb=0;
 	%if %symexist(overrideReb)=0 %then %do;
 		%let finalReb=overrideReb;
@@ -42,12 +46,14 @@
 
 	filename pos "&WorkDirectory.\RunPythonPosDef&PythonPosDefCounter..bat";
 
-	data _null_;
-		file pos;
-		pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
-		msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParms&PythonPosDefCounter. &WorkDirectory.";
-		put msgline; 
-	run;
+	%if algo = "original" %then %do;
+		data _null_;
+			file pos;
+			pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
+			msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParms&PythonPosDefCounter. &WorkDirectory.";
+			put msgline; 
+		run;
+	%else %if algo = "matlab";
 
 	/* RV: call python executable to do find nearest covariance matrix requires numpy and pandas installed*/
 	options noxwait xsync;
