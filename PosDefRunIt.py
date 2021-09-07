@@ -14,7 +14,8 @@ def parse_args():
     return args
 
 def isit_corr(C):
-    psd = True
+    # temporarily set this to false and to see what happens
+    psd = False 
     eigval = np.linalg.eigvals(C)
     if  np.linalg.norm(np.diag(C)-1)>1e-6:
         #print('STATUS: DIAGONALS ARE NOT 1!')
@@ -25,7 +26,7 @@ def isit_corr(C):
     if np.product(C<=1+1e-6) != 1 or np.product(C>=-1-1e-6)!=1:
         #print('STATUS: VALUES NOT BETWEEN NEGATIVE 1 AND 1!')
         psd = False
-    if np.product(eigval>-1e-15) == 0:
+    if np.product(eigval>0) == 0:
         #print('STATUS: EIGENVALUES ARE NOT POSITIVE!')
         print(min(eigval))
         psd = False
@@ -69,7 +70,7 @@ if __name__=="__main__":
     df_input_matrix = pd.read_csv(args.work_directory+'\\'+args.input_table+'.csv')
     names = df_input_matrix.loc[pd.isna(df_input_matrix[args.name_col]) == False][args.name_col]
     input_matrix = df_input_matrix.loc[pd.isna(df_input_matrix[args.name_col]) == False, names].copy()
-    input_matrix = input_matrix.fillna(value=0.0).to_numpy()
+    input_matrix = input_matrix.fillna(value=0.0).to_numpy(dtype=np.float64)
 
     # convert input_matrix to a correlation matrix if it isn't
     if  np.linalg.norm(np.diag(input_matrix)-1)>1e-6:
