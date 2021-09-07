@@ -50,7 +50,7 @@
 		data _null_;
 			file pos;
 			pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
-			msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParms&PythonPosDefCounter. &WorkDirectory.";
+			msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt_org.py &InputTable.&PythonPosDefCounter. PosDefParms&PythonPosDefCounter. &WorkDirectory.";
 			put msgline; 
 		run;
 	%end;
@@ -58,7 +58,7 @@
 		data _null_;
 			file pos;
 			pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
-			msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py --input_table &InputTable.&PythonPosDefCounter. --work_directory &WorkDirectory. --max_iter 1000  --name_col &NameCol. --output_table &OutputTable.&PythonPosDefCounter.";
+			msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt_mat.py --input_table &InputTable.&PythonPosDefCounter. --work_directory &WorkDirectory. --max_iter 1000  --name_col &NameCol. --output_table &OutputTable.&PythonPosDefCounter.";
 			put msgline; 
 		run;
 	%end;
