@@ -13,4 +13,4 @@ env.bak/
 venv.bak/
 
 # CSV 
-tabular_data/
+#tabular_data/
