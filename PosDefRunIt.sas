@@ -46,14 +46,22 @@
 
 	filename pos "&WorkDirectory.\RunPythonPosDef&PythonPosDefCounter..bat";
 
-	%if algo = "original" %then %do;
+	%if &algo. = "original" %then %do;
 		data _null_;
 			file pos;
 			pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
 			msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParms&PythonPosDefCounter. &WorkDirectory.";
 			put msgline; 
 		run;
-	%else %if algo = "matlab";
+	%end;
+	%else %if &algo. = "matlab" %then %do;
+		data _null_;
+			file pos;
+			pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
+			msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py --input_table &InputTable.&PythonPosDefCounter. --work_directory &WorkDirectory. --max_iter 1000  --name_col &NameCol. --output_table &OutputTable.&PythonPosDefCounter.";
+			put msgline; 
+		run;
+	%end;
 
 	/* RV: call python executable to do find nearest covariance matrix requires numpy and pandas installed*/
 	options noxwait xsync;
