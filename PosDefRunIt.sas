@@ -16,13 +16,18 @@
 		%let eigenLT=overrideLT;
 	%end;
 
-	%if %symexist(algo)=0 %then %do;
-		%let algo="original";
+	%if %symexist(overrideReplace)=0 %then %do;
+		%let eigenReplace=overrideReplace;
 	%end;
+
 
 	%let finalReb=0;
 	%if %symexist(overrideReb)=0 %then %do;
 		%let finalReb=overrideReb;
+	%end;
+
+	%if %symexist(algo)=0 %then %do;
+		%let algo="original";
 	%end;
 	
 	%let PosDefSubDir = Powersimm\sasmacro\ForwardPriceSim;
