@@ -11,8 +11,16 @@
 		%let PythonPosDefCounter=0;
 	%end;
 	%let PythonPosDefCounter=%sysevalf(&PythonPosDefCounter.+1);
-	
 
+	%if %symexist(overrideLT)=0 %then %do;
+		%let eigenLT=overrideLT;
+	%end;
+
+	%let finalReb=0;
+	%if %symexist(overrideReb)=0 %then %do;
+		%let finalReb=overrideReb;
+	%end;
+	
 	%let PosDefSubDir = Powersimm\sasmacro\ForwardPriceSim;
 	%let WorkDirectory = %sysfunc(getoption(work));
 
@@ -23,8 +31,8 @@
 		eigenReplace    =  &eigenReplace.    ;
 		maxIter         =  &maxIter.         ;
 		method          =  &method.          ;
+		finalReb        =  &FinalReb.        ;
     run;
-
     
    	proc export data=PosDefParms outfile= "&WorkDirectory.\PosDefParms&PythonPosDefCounter..csv" dbms=csv replace;
 	run;
@@ -41,11 +49,9 @@
 		put msgline; 
 	run;
 
-
 	/* RV: call python executable to do find nearest covariance matrix requires numpy and pandas installed*/
 	options noxwait xsync;
 	x "&WorkDirectory.\RunPythonPosDef&PythonPosDefCounter..bat";
-
 	
 	/* RV: Read out the python data */
 	proc import datafile="&WorkDirectory.\&OutputTable.&PythonPosDefCounter..csv" out=&OutputTable. dbms=csv replace;
