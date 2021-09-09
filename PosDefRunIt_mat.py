@@ -1,3 +1,4 @@
+# ref: IMA Journal of Numerical Analysis (2002) 22, 329Î
 import numpy as np
 import argparse
 from numpy.linalg.linalg import eig
@@ -15,7 +16,7 @@ def parse_args():
 
 def isit_corr(C):
     # temporarily set this to false and to see what happens
-    psd = False 
+    psd = True 
     eigval = np.linalg.eigvals(C)
     if  np.linalg.norm(np.diag(C)-1)>1e-6:
         #print('STATUS: DIAGONALS ARE NOT 1!')
