@@ -49,5 +49,6 @@
 	
 	/* RV: Read out the python data */
 	proc import datafile="&WorkDirectory.\&OutputTable.&PythonPosDefCounter..csv" out=&OutputTable. dbms=csv replace;
+		guessingrows=max;
 	run;
 %mend PosDefRunIt;

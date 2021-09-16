@@ -30,7 +30,7 @@ def PSD_reb(C,eigen_lt,eigen_replace):
 
    return(C_prime)
 
-def PSD_loop(corr,eigen_lt,eigen_replace,max_iter):
+def PSD_loop(corr,eigen_lt,eigen_replace,max_iter,final_reb):
     corr = .5*(corr+corr.T)
     for i in range(0,max_iter):
         print('Iteration: ',i)
@@ -44,13 +44,20 @@ def PSD_loop(corr,eigen_lt,eigen_replace,max_iter):
         np.fill_diagonal(corr,1)
         corr = np.clip(corr,-1,1)
 
-    print(f'Looping didn\'t converge in {max_iter} iterations, applying Rebanato\'s method.')
-    corr = PSD_reb(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace)
+    if final_reb == 0:
+        print(f'Looping didn\'t converge in {max_iter} iterations, applying Rebanato\'s method.')
+        corr = PSD_reb(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace)
+
     return corr
 
-def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,max_iter,method):
+def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,max_iter,method,final_reb):
     # convert to numpy array
     df_input_matrix = pd.read_csv(work_path+'\\'+file_name+'.csv')
+
+    # ensure our name_col has the right case
+    col_list =  df_input_matrix.columns.to_list()
+    name_col = col_list[[str(col).lower() for col in col_list].index(str.lower(name_col))]
+
     names = df_input_matrix.loc[pd.isna(df_input_matrix[name_col]) == False][name_col]
     input_matrix = df_input_matrix.loc[pd.isna(df_input_matrix[name_col]) == False, names].copy()
     input_matrix = input_matrix.fillna(value=0.0).to_numpy()
@@ -68,7 +75,7 @@ def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,
         is_input_corr = True
     
     if method == 1:
-        corr_out = PSD_loop(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace,max_iter=max_iter)
+        corr_out = PSD_loop(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace,max_iter=max_iter,final_reb=final_reb)
     else:
         corr_out = PSD_reb(corr,eigen_lt=eigen_lt,eigen_replace=eigen_replace)
 
@@ -83,7 +90,6 @@ def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,
 
     return df_input_matrix
 
-
 input_file_name = sys.argv[1]
 parm_name       = sys.argv[2]
 work_path       = sys.argv[3]
@@ -97,12 +103,14 @@ parms = parms.rename(columns=dict(
     eigenlt      = 'eigen_lt',
     eigenreplace = 'eigen_replace',
     maxiter      = 'max_iter',
-    method       = 'method'
+    method       = 'method',
+    finalreb    = 'final_reb'
     ))
 
 parms.max_iter=int(parms.max_iter)
 parms.method=int(parms.method)
+parms.final_reb=int(parms.final_reb)
 PSD_approx(input_file_name,work_path,**parms.to_dict('r')[0])
 
 # Example Run:
-# python .\PosDefRunIt.py big3000 PosDefParms C:\Users\rvo67\Desktop\PosDefRunIt-to_python-updt
+# python .\PosDefRunIt.py NewCorrMatrix PosDefParms .\tabular_data\
