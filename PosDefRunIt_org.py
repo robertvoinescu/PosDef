@@ -53,6 +53,11 @@ def PSD_loop(corr,eigen_lt,eigen_replace,max_iter,final_reb):
 def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,max_iter,method,final_reb):
     # convert to numpy array
     df_input_matrix = pd.read_csv(work_path+'\\'+file_name+'.csv')
+
+    # ensure our name_col has the right case
+    col_list =  df_input_matrix.columns.to_list()
+    name_col = col_list[[str(col).lower() for col in col_list].index(str.lower(name_col))]
+
     names = df_input_matrix.loc[pd.isna(df_input_matrix[name_col]) == False][name_col]
     input_matrix = df_input_matrix.loc[pd.isna(df_input_matrix[name_col]) == False, names].copy()
     input_matrix = input_matrix.fillna(value=0.0).to_numpy()

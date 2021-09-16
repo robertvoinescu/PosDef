@@ -20,21 +20,19 @@ def get_matrix(work_directory,table,name_col):
     return input_matrix
 
 if __name__=="__main__":
-    #args = parse_args()
+    args = parse_args()
     # convert csv to numpy array
-    #A = get_matrix(args.work_directory,args.table1,args.name_col)
-    #B = get_matrix(args.work_directory,args.table2,args.name_col)
+    A = get_matrix(args.work_directory,args.table1,args.name_col)
+    B = get_matrix(args.work_directory,args.table2,args.name_col)
 
-    a = 1
-    n = 100
-    A = np.eye(n,n,dtype=np.float64)
-    B = np.eye(n,n,dtype=np.float64)
-    C = np.random.rand(n,n)
-    C = .5*abs(C-C.T)*1e-15
-    print(C)
-    #A[1,0], A[0,1] = a, a
-    #B[2,1], B[1,2] = a, a
-    B += C
+    #a = 1
+    #n = 100
+    #A = np.eye(n,n,dtype=np.float64)
+    #B = np.eye(n,n,dtype=np.float64)
+    #C = np.random.rand(n,n)
+    #C = .5*abs(C-C.T)*1e-15
+    #print(C)
+    #B += C
 
     Alam, Aevec = eig(A)
     Blam, Bevec = eig(B)
@@ -64,13 +62,16 @@ if __name__=="__main__":
     overlapfrob = np.trace(np.matmul(A,B.T))/normA/normB
 
     ###############
-    num_pc = n-1
+    n = A.shape[1]
+    num_pc = n-10
     k = Aevec.shape[1]-num_pc
     Ap = Aevec[:,k:]
     Bp = Bevec[:,k:]
     overlappaper = np.trace(np.matmul(np.matmul(Ap.T,Bp),np.matmul(Bp.T,Ap)))/Ap.shape[1]
     ###############
     overlapnrg = np.trace(abs(np.matmul(Ap.T,Bp)))/Ap.shape[1]
+    print(np.diag((np.matmul(np.matmul(Ap.T,Bp),np.matmul(Bp.T,Ap)))/Ap.shape[1]))
+
 
     print('-'*60)
     print(Ap)
@@ -80,4 +81,4 @@ if __name__=="__main__":
     print('Frobenius Overlap: ',overlapfrob)
     print('-'*60)
 
-# python .\PosDefRunIt_mat.py --max_iter 1000 --name_col x --input_table paper --output_table out --work_directory .\tabular_data\
+# python .\PCA_orig.py --name_col x --table1 outmat --table2 outmat --work_directory .\tabular_data\

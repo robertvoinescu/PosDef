@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.linalg import eigh as eig
+from numpy.linalg import eig as eig
 import pandas as pd
 import argparse
 
@@ -31,7 +31,7 @@ def pca_info(cov_mat, confid_alpha, n_pc=-1):
     if n_pc==-1: # if no number of PC is given, select PC based on confid_alpha
         ev_values=eig_vals_trunc[ev_cum_explained<confid_alpha,]
     else: # select the first n_pc pricipal components
-        ev_values=eig_vals_trunc[:n_pc]
+        ev_values=eig_vals_trunc[-n_pc:]
     
     eig_vecs = eig_vecs[:,:ev_values.shape[0]]
     pca = np.dot(eig_vecs, np.diag(np.sqrt(ev_values)))
@@ -48,15 +48,15 @@ def pca_similarity(pca1,pca2,weights):
     #return S_pca/len(weights)
 
 if __name__ == "__main__":
-    #args = parse_args()
-    #A = get_matrix(args.work_directory,args.table1,args.name_col)
-    #B = get_matrix(args.work_directory,args.table2,args.name_col)
+    args = parse_args()
+    A = get_matrix(args.work_directory,args.table1,args.name_col)
+    B = get_matrix(args.work_directory,args.table2,args.name_col)
 
     print('BEGIN CALCULATION')
     print('#'*30)
-    a = 0.01
-    A = np.array([[1,0,0],[0,1,a],[0,a,1]])#+addM
-    B = np.array([[1,a,0],[a,1,0],[0,0,1]])#+addM
+    #a = 0.01
+    #A = np.array([[1,0,0],[0,1,a],[0,a,1]])#+addM
+    #B = np.array([[1,a,0],[a,1,0],[0,0,1]])#+addM
     Alam, Aevec = eig(A)
     Blam, Bevec = eig(B)
     print('BEGIN CALCULATION')
@@ -80,8 +80,11 @@ if __name__ == "__main__":
     normA = np.sqrt(np.trace(np.matmul(A,A)))
 
     #Step 1: calculate PCAs for both input (original) and realized (simulations)
-    A_ev, A_pca = pca_info(A, 1, n_pc=A.size)
-    B_ev, B_pca = pca_info(B, 1, n_pc=B.size)
+    A_ev, A_pca = pca_info(A, .95,n_pc=A.shape[1]-10)
+    B_ev, B_pca = pca_info(B, .95,n_pc=A.shape[1]-10)
+
+    A_ev, A_pca = pca_info(A, .95)
+    B_ev, B_pca = pca_info(B, .95)
     print('-'*60)
     print('\nPCA MATRIX A')
     print(A_pca)
@@ -91,7 +94,7 @@ if __name__ == "__main__":
     print(np.diag(B_ev))
     
     #Step 2 : Calculate the coefficient of similarity:
-    weights = [1/len(A) for x in A]
+    weights = [1/len(A_ev) for x in A_ev]
     coefficient_of_similarity = pca_similarity(A_pca,B_pca,weights) # pca similarity defined by abs
 
     print('#'*30)
