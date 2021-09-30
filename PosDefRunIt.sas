@@ -3,7 +3,7 @@
 			NameCol=_name_,
 			eigenLT=0.001,
 			eigenReplace=0.01,
-			maxIter=12,
+			maxIter=1000,
 			method = 1);
 			
 	%if %symexist(PythonPosDefCounter)=0 %then %do;
