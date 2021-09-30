@@ -16,7 +16,7 @@
 	%let PosDefSubDir = Powersimm\sasmacro\ForwardPriceSim;
 	%let WorkDirectory = %sysfunc(getoption(work));
 
-    data PosDefParms;
+    data PosDefParams;
 		OutputTable     = "&OutputTable.&PythonPosDefCounter."    ;
 		NameCol         = "&NameCol."        ;
 		eigenLT         =  &eigenLT.         ;
@@ -26,7 +26,7 @@
     run;
 
     
-   	proc export data=PosDefParms outfile= "&WorkDirectory.\PosDefParms&PythonPosDefCounter..csv" dbms=csv replace;
+   	proc export data=PosDefParams outfile= "&WorkDirectory.\PosDefParams&PythonPosDefCounter..csv" dbms=csv replace;
 	run;
 
 	proc export data=&InputTable. outfile= "&WorkDirectory.\&InputTable.&PythonPosDefCounter..csv" dbms=csv replace;
@@ -37,7 +37,7 @@
 	data _null_;
 		file pos;
 		pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
-		msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParms&PythonPosDefCounter. &WorkDirectory.";
+		msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParams&PythonPosDefCounter. &WorkDirectory.";
 		put msgline; 
 	run;
 
