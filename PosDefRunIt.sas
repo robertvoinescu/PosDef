@@ -14,8 +14,9 @@
 	%let PythonPosDefCounter=%sysevalf(&PythonPosDefCounter.+1);
 	
 
-	%let PosDefSubDir = Powersimm\sasmacro\ForwardPriceSim;
+	%let PosDefSubDir  = Powersimm\sasmacro\ForwardPriceSim;
 	%let WorkDirectory = %sysfunc(getoption(work));
+	%let LogFile 	   = "&OutputLogPath\JobId"||trim(left("&JobId."))||"_"||compress(put(datetime(),datetime18.),' :')||"_posdef.log" 
 
     data PosDefParams;
 		OutputTable     = "&OutputTable.&PythonPosDefCounter."    ;
@@ -39,7 +40,7 @@
 	data _null_;
 		file pos;
 		pythonpath = %sysfunc(quote("C:\Program Files\Python37\python.exe"));
-		msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParams&PythonPosDefCounter. &WorkDirectory.";
+		msgline = pythonpath || " &BookMacroCodeBase.\&PosDefSubDir.\PosDefRunIt.py &InputTable.&PythonPosDefCounter. PosDefParams&PythonPosDefCounter. &WorkDirectory. &LogFile.";
 		put msgline; 
 	run;
 

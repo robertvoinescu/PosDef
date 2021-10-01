@@ -33,7 +33,6 @@ def PSD_reb(C,eigen_lt,eigen_replace):
 def PSD_loop(corr,eigen_lt,eigen_replace,max_iter,final_reb):
     corr = .5*(corr+corr.T)
     for i in range(0,max_iter):
-        logging.debug(f'Iteration: {i}')
         eigval, eigvec = np.linalg.eigh(corr)
         if isit_corr(corr,eigval):
             logging.debug(f'Looping converged in {i} iterations.')
@@ -90,19 +89,22 @@ def PSD_approx(file_name,work_path,name_col,output_table,eigen_lt,eigen_replace,
 
     return df_input_matrix
 
+
+
 if __name__ == "__main__":
-    input_file_name = sys.argv[1]
+    input_file_name  = sys.argv[1]
     param_name       = sys.argv[2]
-    work_path       = sys.argv[3]
+    work_path        = sys.argv[3]
+    log_file         = sys.argv[4]
+
     try:
-        logging.basicConfig(level=logging.DEBUG,filename=work_path+'\\'+'posdef.log',  format='%(levelname)s - %(message)s')
+        logging.basicConfig(level=logging.DEBUG,filename=log_file,  format='%(levelname)s - %(message)s')
     except:
-        logging.basicConfig(level=logging.DEBUG,filename='posdef.log', filemode='w', format='%(levelname)s - %(message)s')
+        logging.basicConfig(level=logging.DEBUG,filename=log_file, filemode='w', format='%(levelname)s - %(message)s')
     logging.debug('\n\nRUNNING POSDEF\n\n')
 
     try:
         params = pd.read_csv(work_path+'\\'+param_name+'.csv')
-        
         # make naming conventions uniform
         params.columns = map(str.lower, params.columns)
         params = params.rename(columns=dict(
@@ -127,4 +129,4 @@ if __name__ == "__main__":
         logging.exception('Failed to run main PosDef function.')
     
 # Example Run:
-# python .\PosDefRunIt.py NewCorrMatrix PosDefParams .\tabular_data\
+# python .\PosDefRunIt.py NewCorrMatrix PosDefParams .\tabular_data\ .\tabular_data\posdef.log
