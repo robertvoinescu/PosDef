@@ -1,7 +1,5 @@
 ## POSDEF
-This script makes a matrix positive definite 
-
-To run you will need to install all requirements in requirements.txt:
+This script makes a matrix positive definite. To run you will need to install all requirements in requirements.txt:
 
 pip install -r requirements.txt
 
