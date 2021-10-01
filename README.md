@@ -1,5 +1,5 @@
 ## POSDEF
-This script makes a matrix positive definite. To run you will need to first install the requirements:
+This script makes an input matrix semi positive definite. To run you will need to first install the requirements:
 
 ```
 pip install -r requirements.txt
