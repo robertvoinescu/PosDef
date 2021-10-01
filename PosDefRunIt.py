@@ -95,9 +95,9 @@ if __name__ == "__main__":
     param_name       = sys.argv[2]
     work_path       = sys.argv[3]
     try:
-        logging.basicConfig(level=logging.DEBUG,filename=work_path+'\\'+'python.log',  format='%(levelname)s - %(message)s')
+        logging.basicConfig(level=logging.DEBUG,filename=work_path+'\\'+'posdef.log',  format='%(levelname)s - %(message)s')
     except:
-        logging.basicConfig(level=logging.DEBUG,filename='python.log', filemode='w', format='%(levelname)s - %(message)s')
+        logging.basicConfig(level=logging.DEBUG,filename='posdef.log', filemode='w', format='%(levelname)s - %(message)s')
     logging.debug('\n\nRUNNING POSDEF\n\n')
 
     try:
@@ -123,9 +123,8 @@ if __name__ == "__main__":
         logging.debug('Params: \n'+str(params))
 
         PSD_approx(input_file_name,work_path,**params.to_dict('r')[0])
-    except Exception as e:
-        logging.error(f'\n{e}')
-        logging.error(f'TRACE:\n{e.__traceback__.tb_frame}')
+    except Exception:
+        logging.exception('Failed to run main PosDef function.')
     
 # Example Run:
 # python .\PosDefRunIt.py NewCorrMatrix PosDefParams .\tabular_data\

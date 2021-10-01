@@ -1,10 +1,11 @@
 %macro PosDefRunIt(InputTable=SCORR,
 			OutputTable=SCORRPD,
 			NameCol=_name_,
-			eigenLT=0.001,
-			eigenReplace=0.01,
+			eigenLT	    =0.000000001,
+			eigenReplace=0.00000001,
 			maxIter=1000,
-			method = 1);
+			method=1,
+			final_reb=0);
 			
 	%if %symexist(PythonPosDefCounter)=0 %then %do;
 		%global PythonPosDefCounter;
@@ -23,7 +24,7 @@
 		eigenReplace    =  &eigenReplace.    ;
 		maxIter         =  &maxIter.         ;
 		method          =  &method.          ;
-		final_reb	=  0		     ;
+		final_reb	=  &final_reb.	     ;
     run;
 
     
